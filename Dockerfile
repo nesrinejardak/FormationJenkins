@@ -1,18 +1,24 @@
-Dockerfile
-# Utilisation d'une image Java légère pour l'exécution
-FROM eclipse-temurin:21-jre-alpine
+# Use an official Maven image as the base image
+FROM maven:3.8.4-openjdk-17 AS build
 
-# Métadonnées
-LABEL maintainer="nessrine.jardak@gmail.com"
-
-# Dossier de travail dans le conteneur
+# Set the working directory in the container
 WORKDIR /app
 
-# Copie du fichier JAR généré par Maven vers le conteneur
-COPY target/*.jar app.jar
+# Copy the pom.xml and the project files to the container
+COPY pom.xml .
+COPY src ./src
 
-# Port exposé par l'application 
-EXPOSE 8080
+# Build the application using Maven
+RUN mvn clean package -DskipTests
 
-# Commande de démarrage
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Use an official OpenJDK image as the base image
+FROM openjdk:27-ea-trixie
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the built JAR file from the previous stage to the container
+COPY --from=build /app/target/mon-app-java-*-*.jar ./mon-app-java.jar
+
+# Set the command to run the application
+#CMD ["java", "-jar", "mon-app-java.jar"]
