@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    environment {
+        // Credentials Jenkins
+      #  GITHUB_CREDENTIALS = 'github-token'    // token pour repo privé
+        DOCKER_CREDENTIALS = 'dockerhub-cred' // username/password Docker Hub
+        DOCKER_IMAGE_NAME = 'mon-utilisateur/mon-app-java' // nom de l'image
+        DOCKER_TAG = 'latest' // tag de l'image
+    }
+
+    triggers {
+        // Déclenchement automatique via webhook GitHub
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Récupérer le code depuis le repo privé
+                git(
+                    url: 'https://github.com/nesrinejardak/FormationJenkins.git',
+                    branch: 'main',
+                    credentialsId: "${GITHUB_CREDENTIALS}"
+                )
+            }
+        }
+
+        stage('Build Java') {
+            steps {
+                echo "Compilation du projet Java avec Maven"
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Construction de l'image Docker"
+                sh """
+                    docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
+                """
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Login Docker Hub via credentials Jenkins
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        sh "docker push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline terminé avec succès ! Image Docker stockée sur Docker Hub.'
+        }
+        failure {
+            echo 'Erreur dans le pipeline.'
+        }
+    }
+}
