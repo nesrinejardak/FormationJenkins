@@ -1,25 +1,18 @@
-# Étape 1 : utiliser une image Maven pour builder le projet
-FROM maven:3.9.2-eclipse-temurin-17 AS build
+Dockerfile
+# Utilisation d'une image Java légère pour l'exécution
+FROM eclipse-temurin:21-jre-alpine
 
-# Copier le projet dans le conteneur
-COPY pom.xml /app/
-COPY src /app/src/
+# Métadonnées
+LABEL maintainer="nessrine.jardak@gmail.com"
 
+# Dossier de travail dans le conteneur
 WORKDIR /app
 
-# Build du projet (package jar)
-RUN mvn clean package -DskipTests
+# Copie du fichier JAR généré par Maven vers le conteneur
+COPY target/*.jar app.jar
 
-# Étape 2 : image finale pour exécuter l'application
-FROM eclipse-temurin:17-jdk-alpine
-
-# Copier le jar depuis l'étape build
-COPY --from=build /app/target/*.jar /app/app.jar
-
-WORKDIR /app
-
-# Exposer le port de l'application (ex: Spring Boot)
+# Port exposé par l'application 
 EXPOSE 8080
 
-# Commande pour lancer l'application
+# Commande de démarrage
 ENTRYPOINT ["java", "-jar", "app.jar"]
