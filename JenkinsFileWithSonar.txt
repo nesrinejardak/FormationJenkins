@@ -38,7 +38,7 @@ args '-v $HOME/.m2:/root/.m2'
 steps {
 // Cette commande s'exécute À L'INTÉRIEUR du conteneur Maven ci-dessus.
 // Elle produit le fichier JAR dans le dossier target/
-
+sh 'pwd'
 sh 'mvn clean package -DskipTests'
 }
 // À la fin de ce stage, le conteneur Maven est automatiquement détruit.
