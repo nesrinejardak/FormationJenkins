@@ -31,7 +31,7 @@ image 'maven:3.9.6-eclipse-temurin-21'
 
 // On partage le dossier .m2 pour éviter de retélécharger les dépendances à chaque build
 
-args '-v $HOME/.m2:/jenkins/.m2'
+args '-v /var/lib/jenkins/.m2:/root/.m2'
 }
 
 }
