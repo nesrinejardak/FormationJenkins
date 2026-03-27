@@ -31,7 +31,7 @@ image 'maven:3.9.6-eclipse-temurin-21'
 
 // On partage le dossier .m2 pour éviter de retélécharger les dépendances à chaque build
 
-//args '-v $HOME/.m2:/root/.m2'
+args '-v $HOME/.m2:/root/.m2'
 }
 
 }
@@ -39,7 +39,7 @@ steps {
 // Cette commande s'exécute À L'INTÉRIEUR du conteneur Maven ci-dessus.
 // Elle produit le fichier JAR dans le dossier target/
 
-sh 'mvn clean package -DskipTests'
+sh 'sudo mvn clean package -DskipTests'
 }
 // À la fin de ce stage, le conteneur Maven est automatiquement détruit.
 
